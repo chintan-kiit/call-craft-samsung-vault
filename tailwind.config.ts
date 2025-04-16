@@ -52,6 +52,23 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+                // Custom colors for dark green theme
+                samsungDark: {
+                    900: '#121712', // Very dark green
+                    800: '#1A221A', // Dark green
+                    700: '#1E2E1E', // Medium dark green
+                    600: '#2A3C2A', // Lighter dark green
+                },
+                samsungGreen: {
+                    500: '#2E4F2E', // Dark green
+                    400: '#3A633A', // Medium green
+                    300: '#4B734B', // Lighter green
+                    200: '#568D56', // Light green accent
+                },
+                samsungAccent: {
+                    300: '#66A366', // Light green accent
+                    200: '#8BD68B', // Lighter green accent
+                }
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

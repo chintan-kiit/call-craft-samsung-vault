@@ -1,73 +1,77 @@
-# Welcome to your Lovable project
+# Samsung Call Recorder App
 
-## Project info
+A specialized Samsung-focused Android application for recording, organizing, and managing phone calls, with automatic organization by contact name or phone number.
+
+## Features
+
+- **Automatic Call Recording**: Built-in functionality to record incoming and outgoing calls
+- **Smart Organization**: Recordings automatically sorted into folders by contact name
+- **Fallback Organization**: Uses phone number when contact name is unavailable
+- **Auto-Update Folders**: Folder names automatically sync with contact changes
+- **Recent Recordings**: Quick access to your 3 most recent recordings
+- **Timestamps**: Each recording displays date, time, and duration
+- **Dark Theme**: Elegant dark green/black UI specifically designed for Samsung devices
+
+## Project Info
 
 **URL**: https://lovable.dev/projects/e71949e8-32f7-43dc-9ec5-7478e7c78406
 
-## How can I edit this code?
+## Running the Android App
 
-There are several ways of editing your application.
+To run this app on your Samsung device:
 
-**Use Lovable**
+1. Clone this repository to your local machine
+2. Install dependencies with `npm install`
+3. Build the web assets: `npm run build`
+4. Add Android platform: `npx cap add android`
+5. Sync the web assets: `npx cap sync`
+6. Open in Android Studio: `npx cap open android`
+7. Run on a connected Samsung device or emulator
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e71949e8-32f7-43dc-9ec5-7478e7c78406) and start prompting.
+**Note:** Call recording functionality requires proper permissions and may be subject to legal restrictions in some jurisdictions. Always inform call participants about recording and obtain consent when required by law.
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Development
 
 This project is built with:
 
 - Vite
 - TypeScript
 - React
-- shadcn-ui
+- Capacitor (for Android)
+- shadcn-ui components
 - Tailwind CSS
 
-## How can I deploy this project?
+### Local Development
 
-Simply open [Lovable](https://lovable.dev/projects/e71949e8-32f7-43dc-9ec5-7478e7c78406) and click on Share -> Publish.
+```sh
+# Clone the repository
+git clone <YOUR_GIT_URL>
 
-## Can I connect a custom domain to my Lovable project?
+# Navigate to project directory
+cd <YOUR_PROJECT_NAME>
 
-Yes, you can!
+# Install dependencies
+npm install
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Start development server
+npm run dev
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+# Build for production
+npm run build
+
+# Sync with Android
+npx cap sync
+```
+
+## Samsung Device Compatibility
+
+This app is specifically designed for Samsung devices and may use Samsung-specific APIs for call recording functionality. The app has been optimized for:
+
+- Samsung Galaxy S series
+- Samsung Galaxy Note series
+- Samsung Galaxy A series
+- Other Samsung devices running Android 10+
+
+## UI Theme
+
+The app features a custom dark theme with green accents, designed specifically for Samsung's AMOLED displays to maximize battery efficiency and visual comfort.
