@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Settings, Search } from 'lucide-react';
+import { Settings, Search, Home, FolderOpen, FileAudio } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AppHeaderProps {
   onSettingsClick: () => void;
@@ -12,6 +13,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   onSettingsClick,
   onSearchClick
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isActive = (path: string) => location.pathname === path;
+  
   return (
     <header className="sticky top-0 z-10 bg-samsungDark-900 border-b border-samsungDark-600">
       <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
@@ -58,6 +64,50 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <Settings size={22} />
           </button>
         </div>
+      </div>
+      
+      {/* Navigation Menu */}
+      <div className="flex justify-center px-4 pb-2">
+        <nav className="flex rounded-lg overflow-hidden border border-samsungDark-700 max-w-xs w-full">
+          <button
+            onClick={() => navigate('/')}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-2 py-2 px-3 text-sm transition-colors",
+              isActive('/') 
+                ? "bg-samsungGreen-800 text-green-50" 
+                : "hover:bg-samsungDark-800 text-green-300"
+            )}
+          >
+            <Home size={16} />
+            <span>Home</span>
+          </button>
+          
+          <button
+            onClick={() => navigate('/folders')} 
+            className={cn(
+              "flex flex-1 items-center justify-center gap-2 py-2 px-3 text-sm transition-colors",
+              isActive('/folders') 
+                ? "bg-samsungGreen-800 text-green-50" 
+                : "hover:bg-samsungDark-800 text-green-300"
+            )}
+          >
+            <FolderOpen size={16} />
+            <span>Folders</span>
+          </button>
+          
+          <button
+            onClick={() => navigate('/settings')}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-2 py-2 px-3 text-sm transition-colors",
+              isActive('/settings') 
+                ? "bg-samsungGreen-800 text-green-50" 
+                : "hover:bg-samsungDark-800 text-green-300"
+            )}
+          >
+            <Settings size={16} />
+            <span>Settings</span>
+          </button>
+        </nav>
       </div>
     </header>
   );
