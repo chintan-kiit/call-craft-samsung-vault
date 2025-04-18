@@ -1,5 +1,25 @@
-
 import { Contact, Recording, RecordingFolder } from '../types/recording';
+
+// Parse Samsung call recording filename
+export const parseSamsungRecordingName = (filename: string): Partial<Recording> | null => {
+  // Example: Call_20250418_143022_INCOMING_1234567890.m4a
+  const pattern = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
+  const match = filename.match(pattern);
+  
+  if (!match) return null;
+  
+  const [_, date, time, direction, phoneNumber] = match;
+  const timestamp = new Date(
+    `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`
+  ).getTime();
+  
+  return {
+    phoneNumber,
+    timestamp,
+    filepath: `/storage/emulated/0/Calls/${filename}`,
+    isRead: true
+  };
+};
 
 // Format duration from seconds to MM:SS
 export const formatDuration = (seconds: number): string => {
@@ -37,25 +57,33 @@ export const getRecordingFolders = (
   const recordingsByPhone: Record<string, Recording[]> = {};
   
   recordings.forEach(recording => {
-    if (!recordingsByPhone[recording.phoneNumber]) {
-      recordingsByPhone[recording.phoneNumber] = [];
+    const phoneNumber = recording.phoneNumber.replace(/[^0-9+]/g, ''); // Clean phone number
+    if (!recordingsByPhone[phoneNumber]) {
+      recordingsByPhone[phoneNumber] = [];
     }
-    recordingsByPhone[recording.phoneNumber].push(recording);
+    recordingsByPhone[phoneNumber].push(recording);
   });
   
-  // Create folders
-  return Object.keys(recordingsByPhone).map(phoneNumber => {
-    const recordingsForContact = recordingsByPhone[phoneNumber];
-    const contact = contacts.find(c => c.phoneNumber === phoneNumber);
-    
-    return {
-      id: phoneNumber,
-      name: contact?.name || phoneNumber,
-      phoneNumber,
-      recordings: recordingsForContact,
-      photoUri: contact?.photoUri
-    };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  // Create folders sorted by most recent recording
+  return Object.entries(recordingsByPhone)
+    .map(([phoneNumber, recordings]) => {
+      const contact = contacts.find(c => c.phoneNumber.replace(/[^0-9+]/g, '') === phoneNumber);
+      const sortedRecordings = recordings.sort((a, b) => b.timestamp - a.timestamp);
+      
+      return {
+        id: phoneNumber,
+        name: contact?.name || phoneNumber,
+        phoneNumber,
+        recordings: sortedRecordings,
+        photoUri: contact?.photoUri
+      };
+    })
+    .sort((a, b) => {
+      // Sort folders by most recent recording
+      const aLatest = a.recordings[0]?.timestamp || 0;
+      const bLatest = b.recordings[0]?.timestamp || 0;
+      return bLatest - aLatest;
+    });
 };
 
 // Get recent recordings (most recent first)
