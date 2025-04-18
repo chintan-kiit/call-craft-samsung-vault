@@ -1,45 +1,91 @@
 
 import { Capacitor } from '@capacitor/core';
+import { Permissions } from '@capacitor/core';
+import { Toast } from '@capacitor/toast';
+
+// List of required permissions
+export const REQUIRED_PERMISSIONS = [
+  'android.permission.RECORD_AUDIO',
+  'android.permission.READ_PHONE_STATE',
+  'android.permission.READ_CONTACTS',
+  'android.permission.WRITE_EXTERNAL_STORAGE',
+  'android.permission.READ_EXTERNAL_STORAGE',
+] as const;
 
 // Check if running on a native platform or in browser
 export const isNativePlatform = () => Capacitor.isNativePlatform();
 export const isAndroid = () => Capacitor.getPlatform() === 'android';
 
-// Get permission status
+// Check permission status
 export const checkPermission = async (permission: string): Promise<boolean> => {
   if (!isNativePlatform()) return false;
   
   try {
-    // This is a simplified version - in a real app, you would use 
-    // the Capacitor Permissions API to check actual permissions
-    console.log(`Checking permission: ${permission}`);
-    return true;
+    const { state } = await Permissions.query({ name: permission as any });
+    return state === 'granted';
   } catch (error) {
     console.error(`Error checking permission ${permission}:`, error);
     return false;
   }
 };
 
-// Request recording permission
-export const requestRecordingPermission = async (): Promise<boolean> => {
+// Check all required permissions
+export const checkAllPermissions = async (): Promise<{[key: string]: boolean}> => {
+  const permissionStatus: {[key: string]: boolean} = {};
+  
+  for (const permission of REQUIRED_PERMISSIONS) {
+    permissionStatus[permission] = await checkPermission(permission);
+  }
+  
+  return permissionStatus;
+};
+
+// Request a specific permission
+export const requestPermission = async (permission: string): Promise<boolean> => {
   if (!isNativePlatform()) {
     console.log('Not on native platform, skipping permission request');
     return false;
   }
   
   try {
-    // In a full implementation, you would use the Capacitor Permissions API
-    // to request the RECORD_AUDIO permission
-    console.log('Requesting recording permission');
-    return true;
+    const result = await Permissions.request({ name: permission as any });
+    return result.state === 'granted';
   } catch (error) {
-    console.error('Error requesting recording permission:', error);
+    console.error(`Error requesting permission ${permission}:`, error);
+    return false;
+  }
+};
+
+// Request all required permissions
+export const requestAllPermissions = async (): Promise<boolean> => {
+  if (!isNativePlatform()) {
+    console.log('Not on native platform, skipping permissions request');
+    return false;
+  }
+  
+  try {
+    let allGranted = true;
+    
+    for (const permission of REQUIRED_PERMISSIONS) {
+      const granted = await requestPermission(permission);
+      if (!granted) {
+        allGranted = false;
+        await Toast.show({
+          text: `Permission ${permission} is required for the app to function properly`,
+          duration: 'long',
+          position: 'center'
+        });
+      }
+    }
+    
+    return allGranted;
+  } catch (error) {
+    console.error('Error requesting permissions:', error);
     return false;
   }
 };
 
 // Mock native call recording functions
-// In a real app, this would use a custom Capacitor plugin to interact with Samsung's call recording API
 export const startCallRecording = async (phoneNumber: string): Promise<boolean> => {
   if (!isNativePlatform()) {
     console.log('Not on native platform, simulating recording start');
@@ -47,8 +93,23 @@ export const startCallRecording = async (phoneNumber: string): Promise<boolean> 
   }
   
   try {
+    // Check permissions before starting recording
+    const hasPermissions = await requestAllPermissions();
+    if (!hasPermissions) {
+      await Toast.show({
+        text: 'Required permissions not granted. Cannot start recording.',
+        duration: 'long',
+        position: 'center'
+      });
+      return false;
+    }
+    
     console.log(`Starting call recording for ${phoneNumber}`);
     // In a real app, this would use native code to start recording
+    await Toast.show({
+      text: `Started recording call with ${phoneNumber}`,
+      duration: 'short'
+    });
     return true;
   } catch (error) {
     console.error('Error starting call recording:', error);
@@ -65,9 +126,14 @@ export const stopCallRecording = async (phoneNumber: string): Promise<boolean> =
   try {
     console.log(`Stopping call recording for ${phoneNumber}`);
     // In a real app, this would use native code to stop recording
+    await Toast.show({
+      text: `Stopped recording call with ${phoneNumber}`,
+      duration: 'short'
+    });
     return true;
   } catch (error) {
     console.error('Error stopping call recording:', error);
     return false;
   }
 };
+
