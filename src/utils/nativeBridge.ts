@@ -1,7 +1,7 @@
-
 import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { parseSamsungRecordingName } from './recordingUtils';
 
 // Check if running on a native platform or in browser
 export const isNativePlatform = () => Capacitor.isNativePlatform();
@@ -85,4 +85,3 @@ export const showToast = async (message: string): Promise<void> => {
     duration: 'short'
   });
 };
-
