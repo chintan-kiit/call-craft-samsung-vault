@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   appName: 'Samsung Call Recorder',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    url: 'https://e71949e8-32f7-43dc-9ec5-7478e7c78406.lovableproject.com?forceHideBadge=true',
+    cleartext: true
   },
   plugins: {
     SplashScreen: {
@@ -14,15 +15,8 @@ const config: CapacitorConfig = {
     }
   },
   android: {
-    backgroundColor: "#1A221A",
-    buildOptions: {
-      keystorePath: 'release-key.keystore',
-      keystoreAlias: 'key0',
-      minSdkVersion: 24,
-      targetSdkVersion: 33
-    }
+    backgroundColor: "#1A221A"
   }
 };
 
 export default config;
-
