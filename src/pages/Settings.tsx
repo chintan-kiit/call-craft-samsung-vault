@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useState } from 'react';
 import { AppHeader } from '../components/AppHeader';
 import { 
   ToggleGroup, 
@@ -22,43 +23,14 @@ import {
   HardDrive, 
   LifeBuoy, 
   FileAudio, 
-  Shield,
-  Moon,
-  Lock
+  Moon
 } from 'lucide-react';
-import { 
-  isNativePlatform, 
-  REQUIRED_PERMISSIONS,
-  checkAllPermissions,
-  requestAllPermissions 
-} from '../utils/nativeBridge';
+import { isNativePlatform } from '../utils/nativeBridge';
 
 const Settings = () => {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
-  const [permissions, setPermissions] = useState<{[key: string]: boolean}>({});
   
-  useEffect(() => {
-    if (isNativePlatform()) {
-      checkAndUpdatePermissions();
-    }
-  }, []);
-  
-  const checkAndUpdatePermissions = async () => {
-    const status = await checkAllPermissions();
-    setPermissions(status);
-  };
-  
-  const handleRequestPermissions = async () => {
-    if (await requestAllPermissions()) {
-      toast.success('All permissions granted');
-      await checkAndUpdatePermissions();
-    } else {
-      toast.error('Some permissions were not granted');
-      await checkAndUpdatePermissions();
-    }
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-samsungDark-900">
       <AppHeader 
@@ -69,12 +41,8 @@ const Settings = () => {
       <main className="flex-1 p-4 max-w-4xl mx-auto w-full">
         <h1 className="text-xl font-bold text-green-50 mb-4">Settings</h1>
         
-        <Tabs defaultValue="permissions" className="w-full">
+        <Tabs defaultValue="recording" className="w-full">
           <TabsList className="w-full mb-4 bg-samsungDark-800 p-1">
-            <TabsTrigger value="permissions" className="flex-1 data-[state=active]:bg-samsungGreen-700 data-[state=active]:text-green-50">
-              <Shield className="mr-2 h-4 w-4" />
-              Permissions
-            </TabsTrigger>
             <TabsTrigger value="recording" className="flex-1 data-[state=active]:bg-samsungGreen-700 data-[state=active]:text-green-50">
               <FileAudio className="mr-2 h-4 w-4" />
               Recording
@@ -88,42 +56,6 @@ const Settings = () => {
               Appearance
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="permissions">
-            <Card className="bg-samsungDark-800 border-samsungDark-600">
-              <CardHeader>
-                <CardTitle className="text-green-50">App Permissions</CardTitle>
-                <CardDescription>Manage permissions required for call recording</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {REQUIRED_PERMISSIONS.map((permission) => (
-                  <div key={permission} className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-green-100">
-                        {permission.split('.').pop()?.replace(/_/g, ' ')}
-                      </h3>
-                      <p className="text-xs text-green-300">
-                        {permissions[permission] ? 'Granted' : 'Not granted'}
-                      </p>
-                    </div>
-                    <div className={`h-3 w-3 rounded-full ${
-                      permissions[permission] ? 'bg-green-500' : 'bg-red-500'
-                    }`} />
-                  </div>
-                ))}
-                
-                <div className="pt-4">
-                  <Button 
-                    onClick={handleRequestPermissions}
-                    className="w-full bg-samsungGreen-600 hover:bg-samsungGreen-700"
-                  >
-                    <Lock className="mr-2 h-4 w-4" />
-                    Request All Permissions
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
           
           <TabsContent value="recording">
             <Card className="bg-samsungDark-800 border-samsungDark-600">
@@ -160,8 +92,8 @@ const Settings = () => {
                 </div>
                 
                 <div className="border-t border-samsungDark-600 pt-4">
-                  <Button variant="default" className="bg-samsungGreen-600 hover:bg-samsungGreen-700" onClick={checkPermissions}>
-                    Check Recording Permissions
+                  <Button variant="default" className="bg-samsungGreen-600 hover:bg-samsungGreen-700" onClick={() => toast.success("Recording settings saved")}>
+                    Save Recording Settings
                   </Button>
                 </div>
               </CardContent>

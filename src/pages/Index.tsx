@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
 import { RecordingFolder } from '../components/RecordingFolder';
@@ -7,27 +7,14 @@ import { RecordingItem } from '../components/RecordingItem';
 import { RecordingPlayer } from '../components/RecordingPlayer';
 import { recordingService } from '../utils/recordingService';
 import { getRecordingFolders, getRecentRecordings } from '../utils/recordingUtils';
-import { Recording, RecordingFolder as RecordingFolderType } from '../types/recording';
-import { requestRecordingPermission, isNativePlatform } from '../utils/nativeBridge';
+import { Recording } from '../types/recording';
+import { isNativePlatform } from '../utils/nativeBridge';
 import { toast } from '../components/ui/sonner';
 
 const Index = () => {
   const [activeRecording, setActiveRecording] = useState<Recording | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
-  // Request permissions when the app starts on native platforms
-  useEffect(() => {
-    if (isNativePlatform()) {
-      requestRecordingPermission().then((granted) => {
-        if (granted) {
-          toast.success('Recording permission granted');
-        } else {
-          toast.error('Recording permission denied');
-        }
-      });
-    }
-  }, []);
 
   // Fetch recordings data
   const { data: recordings = [], isLoading: recordingsLoading } = useQuery({
