@@ -2,7 +2,8 @@ import { Contact, Recording, RecordingFolder } from '../types/recording';
 
 // Parse Samsung call recording filename
 export const parseSamsungRecordingName = (filename: string): Partial<Recording> | null => {
-  // Example: Call_20250418_143022_INCOMING_1234567890.m4a
+  // Samsung saves recordings in format: Call_20250418_143022_INCOMING_1234567890.m4a
+  // Pattern: Call_[date:YYYYMMDD]_[time:HHMMSS]_[INCOMING/OUTGOING]_[phoneNumber].m4a
   const pattern = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
   const match = filename.match(pattern);
   

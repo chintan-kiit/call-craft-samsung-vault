@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AppHeader } from '../components/AppHeader';
 import { 
@@ -23,13 +22,20 @@ import {
   HardDrive, 
   LifeBuoy, 
   FileAudio, 
-  Moon
+  Moon,
+  Mail
 } from 'lucide-react';
 import { isNativePlatform } from '../utils/nativeBridge';
 
 const Settings = () => {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  
+  const handleGetHelp = () => {
+    // Open email client with support email
+    window.location.href = 'mailto:chintankrjana@gmail.com?subject=Samsung Call Recorder Help Request';
+    toast.success('Opening email client...');
+  };
   
   return (
     <div className="flex flex-col min-h-screen bg-samsungDark-900">
@@ -185,8 +191,8 @@ const Settings = () => {
         </Tabs>
         
         <div className="mt-6 text-center">
-          <Button variant="outline" className="bg-samsungDark-800 hover:bg-samsungDark-700">
-            <LifeBuoy className="mr-2 h-4 w-4" /> Get Help
+          <Button variant="outline" className="bg-samsungDark-800 hover:bg-samsungDark-700" onClick={handleGetHelp}>
+            <LifeBuoy className="mr-2 h-4 w-4" /> Get Help <Mail className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </main>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Settings, Search, Home, FolderOpen, FileAudio } from 'lucide-react';
+import { Search, Home, FolderOpen, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -52,17 +52,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <Search size={22} />
           </button>
           
-          <button 
-            onClick={onSettingsClick}
-            aria-label="Settings"
-            className={cn(
-              "p-2 rounded-full",
-              "hover:bg-samsungDark-700 transition-colors",
-              "text-samsungAccent-300"
-            )}
-          >
-            <Settings size={22} />
-          </button>
+          {/* Settings button removed from header as requested */}
         </div>
       </div>
       

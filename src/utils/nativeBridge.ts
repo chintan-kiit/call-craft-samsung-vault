@@ -1,3 +1,4 @@
+
 import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -16,6 +17,7 @@ export const isSamsungDevice = async (): Promise<boolean> => {
 
 // Get Samsung's call recordings path
 export const getSamsungRecordingsPath = (): string => {
+  // This is the standard path where Samsung devices store call recordings
   return '/storage/emulated/0/Calls';
 };
 
@@ -31,7 +33,7 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
     });
     
     return result.files
-      .filter(file => file.name.endsWith('.m4a'))
+      .filter(file => file.name.endsWith('.m4a')) // Samsung uses .m4a format
       .map(file => `${recordingsPath}/${file.name}`);
   } catch (error) {
     console.error('Error scanning recordings:', error);
