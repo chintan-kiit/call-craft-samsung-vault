@@ -42,44 +42,6 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
   }
 };
 
-// Function to organize recordings into folders
-export const organizeRecordings = async (): Promise<void> => {
-  try {
-    if (!isAndroid()) return;
-    
-    const recordings = await scanExistingRecordings();
-    const basePath = getSamsungRecordingsPath();
-    
-    for (const recording of recordings) {
-      const filename = recording.split('/').pop() || '';
-      const parsedData = parseSamsungRecordingName(filename);
-      
-      if (parsedData?.phoneNumber) {
-        const folderPath = `${basePath}/${parsedData.phoneNumber}`;
-        
-        // Create folder if it doesn't exist
-        await Filesystem.mkdir({
-          path: folderPath,
-          directory: Directory.External,
-          recursive: true
-        });
-        
-        // Move file to folder
-        await Filesystem.copy({
-          from: recording,
-          to: `${folderPath}/${filename}`,
-          directory: Directory.External
-        });
-      }
-    }
-    
-    await showToast('Recordings organized successfully');
-  } catch (error) {
-    console.error('Error organizing recordings:', error);
-    await showToast('Error organizing recordings');
-  }
-};
-
 // Toast notification helper
 export const showToast = async (message: string): Promise<void> => {
   await Toast.show({

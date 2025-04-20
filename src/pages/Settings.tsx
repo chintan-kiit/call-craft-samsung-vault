@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AppHeader } from '../components/AppHeader';
 import { 
@@ -21,7 +22,6 @@ import {
   Smartphone, 
   HardDrive, 
   LifeBuoy, 
-  FileAudio, 
   Moon,
   Mail
 } from 'lucide-react';
@@ -47,12 +47,8 @@ const Settings = () => {
       <main className="flex-1 p-4 max-w-4xl mx-auto w-full">
         <h1 className="text-xl font-bold text-green-50 mb-4">Settings</h1>
         
-        <Tabs defaultValue="recording" className="w-full">
+        <Tabs defaultValue="storage" className="w-full">
           <TabsList className="w-full mb-4 bg-samsungDark-800 p-1">
-            <TabsTrigger value="recording" className="flex-1 data-[state=active]:bg-samsungGreen-700 data-[state=active]:text-green-50">
-              <FileAudio className="mr-2 h-4 w-4" />
-              Recording
-            </TabsTrigger>
             <TabsTrigger value="storage" className="flex-1 data-[state=active]:bg-samsungGreen-700 data-[state=active]:text-green-50">
               <HardDrive className="mr-2 h-4 w-4" />
               Storage
@@ -62,49 +58,6 @@ const Settings = () => {
               Appearance
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="recording">
-            <Card className="bg-samsungDark-800 border-samsungDark-600">
-              <CardHeader>
-                <CardTitle className="text-green-50">Recording Settings</CardTitle>
-                <CardDescription>Configure how calls are recorded</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-green-100">Auto record all calls</h3>
-                    <p className="text-xs text-green-300">Automatically record all incoming and outgoing calls</p>
-                  </div>
-                  <Switch id="auto-record" />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium text-green-100">Exclude contacts</h3>
-                    <p className="text-xs text-green-300">Don't record calls from specific contacts</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="bg-samsungDark-700 hover:bg-samsungDark-600">
-                    Manage
-                  </Button>
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-green-100">Recording quality</h3>
-                  <ToggleGroup type="single" defaultValue="medium" className="justify-start">
-                    <ToggleGroupItem value="low" className="bg-samsungDark-700 data-[state=on]:bg-samsungGreen-700">Low</ToggleGroupItem>
-                    <ToggleGroupItem value="medium" className="bg-samsungDark-700 data-[state=on]:bg-samsungGreen-700">Medium</ToggleGroupItem>
-                    <ToggleGroupItem value="high" className="bg-samsungDark-700 data-[state=on]:bg-samsungGreen-700">High</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                
-                <div className="border-t border-samsungDark-600 pt-4">
-                  <Button variant="default" className="bg-samsungGreen-600 hover:bg-samsungGreen-700" onClick={() => toast.success("Recording settings saved")}>
-                    Save Recording Settings
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
           
           <TabsContent value="storage">
             <Card className="bg-samsungDark-800 border-samsungDark-600">

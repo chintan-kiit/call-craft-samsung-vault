@@ -3,8 +3,8 @@ import { Recording, Contact } from '../types/recording';
 import { loadContacts } from './contactUtils';
 import { createMockRecording } from './recordingUtils';
 
-// This simulates a recording database/storage service
-// In a real Samsung app, this would use actual file system APIs
+// This is a mock recording service that simulates a recording database/storage
+// It doesn't actually record calls - it only manages simulated recordings
 class RecordingService {
   private recordings: Recording[] = [];
   private contacts: Contact[] = [];
@@ -41,32 +41,6 @@ class RecordingService {
   async getAllContacts(): Promise<Contact[]> {
     await this.ensureInitialized();
     return [...this.contacts];
-  }
-  
-  // Start recording a call
-  // In a real app, this would use Samsung's Call Recording API
-  startRecording(phoneNumber: string) {
-    console.log(`Started recording call with ${phoneNumber}`);
-    // In real implementation, this would start the native recording
-  }
-  
-  // Stop recording
-  // In a real app, this would use Samsung's Call Recording API
-  async stopRecording(phoneNumber: string): Promise<Recording | null> {
-    console.log(`Stopped recording call with ${phoneNumber}`);
-    
-    // Find the contact by phone number
-    const contact = this.contacts.find(c => c.phoneNumber === phoneNumber) || {
-      id: 'unknown',
-      name: null,
-      phoneNumber
-    };
-    
-    // Create a new recording entry
-    const newRecording = createMockRecording(contact);
-    this.recordings.unshift(newRecording);
-    
-    return newRecording;
   }
   
   // Update contact name in all recordings
