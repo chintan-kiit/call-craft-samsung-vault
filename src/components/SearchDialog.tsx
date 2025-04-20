@@ -63,7 +63,11 @@ export const SearchDialog: React.FC<SearchDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 bg-samsungDark-900 border-samsungDark-700">
+      <DialogContent 
+        className="sm:max-w-md p-0 gap-0 bg-samsungDark-900 border-samsungDark-700"
+        // Disable the default close button from DialogContent
+        closeButton={false}
+      >
         <DialogHeader className="p-4 border-b border-samsungDark-700 flex-row justify-between items-center">
           <DialogTitle className="text-green-50">Search Recordings</DialogTitle>
           <button
