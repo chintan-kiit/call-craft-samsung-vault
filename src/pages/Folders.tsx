@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
 import { RecordingFolder } from '../components/RecordingFolder';
 import { RecordingPlayer } from '../components/RecordingPlayer';
+import { SearchDialog } from '../components/SearchDialog';
 import { recordingService } from '../utils/recordingService';
 import { getRecordingFolders } from '../utils/recordingUtils';
 import { Recording } from '../types/recording';
@@ -144,6 +145,14 @@ const Folders = () => {
           onClose={() => setActiveRecording(null)}
         />
       )}
+      
+      {/* Search Dialog */}
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        recordings={recordings}
+        onSelectRecording={handlePlayRecording}
+      />
     </div>
   );
 };

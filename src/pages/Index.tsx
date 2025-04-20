@@ -5,6 +5,7 @@ import { AppHeader } from '../components/AppHeader';
 import { RecordingFolder } from '../components/RecordingFolder';
 import { RecordingItem } from '../components/RecordingItem';
 import { RecordingPlayer } from '../components/RecordingPlayer';
+import { SearchDialog } from '../components/SearchDialog';
 import { recordingService } from '../utils/recordingService';
 import { getRecordingFolders, getRecentRecordings } from '../utils/recordingUtils';
 import { Recording } from '../types/recording';
@@ -124,6 +125,14 @@ const Index = () => {
           onClose={() => setActiveRecording(null)}
         />
       )}
+      
+      {/* Search Dialog */}
+      <SearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        recordings={recordings}
+        onSelectRecording={handlePlayRecording}
+      />
     </div>
   );
 };
