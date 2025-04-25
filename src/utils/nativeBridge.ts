@@ -16,17 +16,20 @@ export const checkStoragePermission = async (): Promise<boolean> => {
   if (!isAndroid()) return false;
   
   try {
-    // Use Device plugin to check permissions
-    const permissionStatus = await Device.checkPermissions();
-    
-    if (permissionStatus.storage !== 'granted') {
+    // In Capacitor, we can't directly check storage permissions with Device plugin
+    // Instead, we'll try to access the directory and handle any permission errors
+    try {
+      // Try reading the directory to see if we have permissions
+      await Filesystem.readdir({
+        path: getSamsungRecordingsPath(),
+        directory: Directory.External
+      });
+      return true; // If no error was thrown, we have permission
+    } catch (error) {
+      console.log('Permission not granted, showing toast and returning false');
       await showToast('Storage permission is required to access call recordings');
-      // Optionally request permissions
-      const requestResult = await Device.requestPermissions();
-      return requestResult.storage === 'granted';
+      return false;
     }
-    
-    return true;
   } catch (error) {
     console.error('Error checking storage permission:', error);
     await showToast('Error checking storage permissions');
@@ -43,28 +46,28 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
       return [];
     }
 
-    // Check permissions first
-    const hasPermission = await checkStoragePermission();
-    if (!hasPermission) {
-      console.log('Storage permission not granted');
+    // Check if we can access files (implies we have permission)
+    try {
+      const recordingsPath = getSamsungRecordingsPath();
+      console.log('Scanning recordings at path:', recordingsPath);
+
+      const result = await Filesystem.readdir({
+        path: recordingsPath,
+        directory: Directory.External
+      });
+
+      // Filter for .m4a files (Samsung recording format)
+      const recordings = result.files
+        .filter(file => file.name.endsWith('.m4a'))
+        .map(file => `${recordingsPath}/${file.name}`);
+
+      console.log('Found recordings:', recordings.length);
+      return recordings;
+    } catch (error) {
+      console.log('Error accessing recordings, likely a permissions issue:', error);
+      await showToast('Error accessing recordings folder. Please check app permissions.');
       return [];
     }
-
-    const recordingsPath = getSamsungRecordingsPath();
-    console.log('Scanning recordings at path:', recordingsPath);
-
-    const result = await Filesystem.readdir({
-      path: recordingsPath,
-      directory: Directory.External
-    });
-
-    // Filter for .m4a files (Samsung recording format)
-    const recordings = result.files
-      .filter(file => file.name.endsWith('.m4a'))
-      .map(file => `${recordingsPath}/${file.name}`);
-
-    console.log('Found recordings:', recordings.length);
-    return recordings;
   } catch (error) {
     console.error('Error scanning recordings:', error);
     await showToast('Error accessing recordings folder. Please check app permissions.');
