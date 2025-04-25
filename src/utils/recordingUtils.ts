@@ -93,25 +93,3 @@ export const getRecentRecordings = (recordings: Recording[], limit = 3): Recordi
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, limit);
 };
-
-// Mock function to simulate recording a call (for development only)
-export const createMockRecording = (
-  contact: Contact,
-  duration = Math.floor(Math.random() * 600) + 30 // Random duration between 30s and 10min
-): Recording => {
-  const id = Math.random().toString(36).substring(2, 10);
-  const timestamp = Date.now();
-  const size = Math.floor(Math.random() * 1024 * 1024 * 10) + 1024 * 100; // 100KB to 10MB
-  
-  return {
-    id,
-    contactId: contact.id,
-    phoneNumber: contact.phoneNumber,
-    contactName: contact.name,
-    duration,
-    timestamp,
-    filepath: `/recordings/${id}.m4a`,
-    size,
-    isRead: false
-  };
-};

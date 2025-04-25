@@ -1,7 +1,7 @@
 
 import { Recording, Contact } from '../types/recording';
 import { parseSamsungRecordingName } from './recordingUtils';
-import { scanExistingRecordings } from './nativeBridge';
+import { scanExistingRecordings, getFileDetails } from './nativeBridge';
 
 class RecordingService {
   // Get all recordings present on the device (Samsung recordings folder)
@@ -16,15 +16,18 @@ class RecordingService {
       const partial = parseSamsungRecordingName(filename);
       if (!partial?.phoneNumber || !partial?.timestamp) continue;
 
+      // Get file size from filesystem
+      const fileDetails = await getFileDetails(filepath);
+
       recordings.push({
         id: filepath,
         contactId: '', 
         phoneNumber: partial.phoneNumber,
         contactName: null,
-        duration: 0,
+        duration: 0, // Duration would require audio file parsing
         timestamp: partial.timestamp,
         filepath,
-        size: 0,
+        size: fileDetails?.size || 0,
         isRead: true,
       });
     }

@@ -2,7 +2,6 @@
 import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { parseSamsungRecordingName } from './recordingUtils';
 
 // Check if running on a native platform or in browser
 export const isNativePlatform = () => Capacitor.isNativePlatform();
@@ -39,6 +38,23 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
     console.error('Error scanning recordings:', error);
     await showToast('Error accessing recordings folder. Please check app permissions.');
     return [];
+  }
+};
+
+// Get file details using Filesystem API
+export const getFileDetails = async (filepath: string) => {
+  try {
+    const stat = await Filesystem.stat({
+      path: filepath,
+      directory: Directory.External
+    });
+    return {
+      size: stat.size,
+      mtime: stat.mtime
+    };
+  } catch (error) {
+    console.error('Error getting file details:', error);
+    return null;
   }
 };
 
