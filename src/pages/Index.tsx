@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
 import { RecordingFolder } from '../components/RecordingFolder';
@@ -18,7 +18,7 @@ const Index = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Fetch recordings data
-  const { data: recordings = [], isLoading: recordingsLoading } = useQuery({
+  const { data: recordings = [], isLoading: recordingsLoading, refetch: refetchRecordings } = useQuery({
     queryKey: ['recordings'],
     queryFn: async () => recordingService.getAllRecordings(),
   });
@@ -28,6 +28,29 @@ const Index = () => {
     queryKey: ['contacts'],
     queryFn: async () => recordingService.getAllContacts(),
   });
+
+  // Effect for page focus to refresh recordings
+  useEffect(() => {
+    const refreshOnFocus = async () => {
+      if (isNativePlatform()) {
+        await recordingService.refreshRecordings();
+        refetchRecordings();
+      }
+    };
+
+    // Initial refresh
+    refreshOnFocus();
+
+    // Add listener for recordingService updates
+    const removeListener = recordingService.addListener(() => {
+      refetchRecordings();
+    });
+
+    // Clean up listener
+    return () => {
+      removeListener();
+    };
+  }, [refetchRecordings]);
 
   // Get recent recordings and folders
   const recentRecordings = getRecentRecordings(recordings, 3);

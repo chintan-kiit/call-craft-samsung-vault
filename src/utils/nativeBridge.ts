@@ -2,6 +2,7 @@
 import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Permissions } from '@capacitor/core';
 
 // Check if running on a native platform or in browser
 export const isNativePlatform = () => Capacitor.isNativePlatform();
@@ -10,12 +11,40 @@ export const isAndroid = () => Capacitor.getPlatform() === 'android';
 // Samsung call recordings folder path
 export const getSamsungRecordingsPath = (): string => '/storage/emulated/0/Calls';
 
+// Check and request storage permission
+export const checkStoragePermission = async (): Promise<boolean> => {
+  if (!isAndroid()) return false;
+  
+  try {
+    // Request storage permissions - this is required for Android 10+
+    const result = await Permissions.query({ name: 'storage' });
+    
+    if (result.state !== 'granted') {
+      await showToast('Storage permission is required to access call recordings');
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error checking storage permission:', error);
+    await showToast('Error checking storage permissions');
+    return false;
+  }
+};
+
 // Function to scan for existing real recordings (Samsung format only)
 export const scanExistingRecordings = async (): Promise<string[]> => {
   try {
     // Only scan on Android devices
     if (!isAndroid()) {
       console.log('Not on Android device, no recordings available');
+      return [];
+    }
+
+    // Check permissions first
+    const hasPermission = await checkStoragePermission();
+    if (!hasPermission) {
+      console.log('Storage permission not granted');
       return [];
     }
 

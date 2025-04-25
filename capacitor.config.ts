@@ -12,10 +12,16 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 0
+    },
+    Permissions: {
+      requestOnFirstPermission: true
     }
   },
   android: {
-    backgroundColor: "#1A221A"
+    backgroundColor: "#1A221A",
+    allowMixedContent: true,
+    webContentsDebuggingEnabled: true,
+    appendUserAgent: "SamsungCallRecorder"
   }
 };
 
