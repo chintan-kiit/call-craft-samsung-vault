@@ -8,22 +8,33 @@ import { parseSamsungRecordingName } from './recordingUtils';
 export const isNativePlatform = () => Capacitor.isNativePlatform();
 export const isAndroid = () => Capacitor.getPlatform() === 'android';
 
-// Samsung call recordings folder
+// Samsung call recordings folder path
 export const getSamsungRecordingsPath = (): string => '/storage/emulated/0/Calls';
 
 // Function to scan for existing real recordings (Samsung format only)
 export const scanExistingRecordings = async (): Promise<string[]> => {
   try {
-    if (!isAndroid()) return [];
+    // Only scan on Android devices
+    if (!isAndroid()) {
+      console.log('Not on Android device, no recordings available');
+      return [];
+    }
+
     const recordingsPath = getSamsungRecordingsPath();
+    console.log('Scanning recordings at path:', recordingsPath);
+
     const result = await Filesystem.readdir({
       path: recordingsPath,
       directory: Directory.External
     });
-    // List only .m4a (Samsung recordings)
-    return result.files
+
+    // Filter for .m4a files (Samsung recording format)
+    const recordings = result.files
       .filter(file => file.name.endsWith('.m4a'))
       .map(file => `${recordingsPath}/${file.name}`);
+
+    console.log('Found recordings:', recordings.length);
+    return recordings;
   } catch (error) {
     console.error('Error scanning recordings:', error);
     await showToast('Error accessing recordings folder. Please check app permissions.');
