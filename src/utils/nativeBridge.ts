@@ -2,7 +2,7 @@
 import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { PermissionState, Permissions as CapPermissions } from '@capacitor/core';
+import { Device } from '@capacitor/device';
 
 // Check if running on a native platform or in browser
 export const isNativePlatform = () => Capacitor.isNativePlatform();
@@ -16,12 +16,14 @@ export const checkStoragePermission = async (): Promise<boolean> => {
   if (!isAndroid()) return false;
   
   try {
-    // For newer Capacitor versions, permissions are handled differently
-    const permResult = await CapPermissions.query({ name: 'storage' });
+    // Use Device plugin to check permissions
+    const permissionStatus = await Device.checkPermissions();
     
-    if (permResult.state !== 'granted') {
+    if (permissionStatus.storage !== 'granted') {
       await showToast('Storage permission is required to access call recordings');
-      return false;
+      // Optionally request permissions
+      const requestResult = await Device.requestPermissions();
+      return requestResult.storage === 'granted';
     }
     
     return true;
