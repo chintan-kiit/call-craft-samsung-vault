@@ -6,7 +6,9 @@ const config: CapacitorConfig = {
   appName: 'Samsung Call Recorder',
   webDir: 'dist',
   server: {
-    url: 'https://e71949e8-32f7-43dc-9ec5-7478e7c78406.lovableproject.com?forceHideBadge=true',
+    androidScheme: 'https',
+    // Use local dev server instead of remote URL
+    url: 'http://localhost:8080',
     cleartext: true
   },
   plugins: {
@@ -14,7 +16,7 @@ const config: CapacitorConfig = {
       launchShowDuration: 0
     },
     Permissions: {
-      requestOnFirstPermission: true
+      requestOnPermission: true
     }
   },
   android: {
