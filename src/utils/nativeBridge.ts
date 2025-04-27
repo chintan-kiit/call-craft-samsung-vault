@@ -11,12 +11,20 @@ export const isAndroid = () => Capacitor.getPlatform() === 'android';
 // Common call recordings folder paths on Android
 export const getRecordingsPaths = (): string[] => [
   '/storage/emulated/0/Calls',
+  '/storage/emulated/0/Call',
   '/storage/emulated/0/recordings/call',
   '/storage/emulated/0/internal storage/recordings/call',
-  '/storage/emulated/0/DCIM/CallRecordings'
+  '/storage/emulated/0/DCIM/CallRecordings',
+  '/storage/emulated/0/Android/data/com.sec.android.app.callrecorder/files',
+  '/storage/emulated/0/Android/data/com.sec.android.app.voicenote/files',
+  '/storage/emulated/0/Samsung/Call',
+  '/storage/emulated/0/Samsung/VoiceRecorder',
+  '/storage/emulated/0/Phone/Recordings',
+  '/storage/emulated/0/Phone/Call',
+  '/storage/emulated/0/Phone/CallRecorder'
 ];
 
-// Check and request storage permission
+// Check and request storage permissions using native Android APIs
 export const checkStoragePermission = async (): Promise<boolean> => {
   if (!isAndroid()) {
     console.log('Device is not running Android, cannot access storage');
@@ -24,25 +32,50 @@ export const checkStoragePermission = async (): Promise<boolean> => {
   }
   
   try {
-    // Try reading the directory to see if we have permissions
+    // Try directly accessing common paths to trigger permission prompt
+    console.log("Attempting to access storage...");
+
+    // First try direct permission check (this triggers system permission dialog)
+    const result = await Filesystem.checkPermissions();
+    console.log("Permission check result:", result);
+    
+    if (result.publicStorage !== 'granted') {
+      // Request permission explicitly
+      console.log("Requesting storage permission...");
+      const requestResult = await Filesystem.requestPermissions();
+      console.log("Permission request result:", requestResult);
+      
+      if (requestResult.publicStorage !== 'granted') {
+        console.log("Permission denied by user");
+        await showToast('Storage permission is required to access call recordings');
+        return false;
+      }
+    }
+    
+    // Try accessing one of the paths to verify permission is working
     const paths = getRecordingsPaths();
     for (const path of paths) {
       try {
-        await Filesystem.readdir({
+        console.log(`Trying to access path: ${path}`);
+        const result = await Filesystem.readdir({
           path: path,
-          directory: Directory.External
+          directory: Directory.ExternalStorage
         });
-        console.log('Permission granted, can access recordings folder:', path);
-        return true;
+        
+        if (result && result.files) {
+          console.log(`Successfully accessed ${path}, found ${result.files.length} files`);
+          return true;
+        }
       } catch (error) {
         console.log(`Failed to access path: ${path}`, error);
         // Continue to next path
       }
     }
     
-    console.error('Permission not granted or recordings folders not available');
-    await showToast('Storage permission is required to access call recordings');
+    console.log('Could not access any recording paths');
+    await showToast('Could not find call recordings folder. Please check your device storage.');
     return false;
+    
   } catch (error) {
     console.error('Error checking storage permission:', error);
     await showToast('Storage permission check failed');
@@ -66,7 +99,7 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
         console.log('Scanning recordings at path:', recordingsPath);
         const result = await Filesystem.readdir({
           path: recordingsPath,
-          directory: Directory.External
+          directory: Directory.ExternalStorage
         });
 
         // Filter for common recording formats
@@ -114,7 +147,7 @@ export const getFileDetails = async (filepath: string) => {
     
     const stat = await Filesystem.stat({
       path: filepath,
-      directory: Directory.External
+      directory: Directory.ExternalStorage
     });
     
     return {

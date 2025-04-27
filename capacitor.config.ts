@@ -14,9 +14,6 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 0
-    },
-    Permissions: {
-      requestOnPermission: true
     }
   },
   android: {
@@ -27,7 +24,9 @@ const config: CapacitorConfig = {
     useLegacyBridge: true,  // Try this for older Android devices
     permissions: [
       "android.permission.READ_EXTERNAL_STORAGE",
-      "android.permission.WRITE_EXTERNAL_STORAGE"
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.READ_MEDIA_AUDIO",
+      "android.permission.MANAGE_EXTERNAL_STORAGE"
     ]
   }
 };

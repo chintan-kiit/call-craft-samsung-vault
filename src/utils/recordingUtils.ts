@@ -3,10 +3,11 @@ import { Contact, Recording, RecordingFolder } from '../types/recording';
 
 // Parse Samsung call recording filename
 export const parseSamsungRecordingName = (filename: string): Partial<Recording> | null => {
-  // Samsung saves recordings in format: Call_20250418_143022_INCOMING_1234567890.m4a
-  // Pattern: Call_[date:YYYYMMDD]_[time:HHMMSS]_[INCOMING/OUTGOING]_[phoneNumber].m4a
-  const samsungPattern = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
-  const match = filename.match(samsungPattern);
+  // Samsung saves recordings in various formats, trying multiple patterns:
+  
+  // Pattern 1: Call_[date:YYYYMMDD]_[time:HHMMSS]_[INCOMING/OUTGOING]_[phoneNumber].m4a
+  const samsungPattern1 = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
+  let match = filename.match(samsungPattern1);
   
   if (match) {
     const [_, date, time, direction, phoneNumber] = match;
@@ -17,7 +18,43 @@ export const parseSamsungRecordingName = (filename: string): Partial<Recording> 
     return {
       phoneNumber,
       timestamp,
-      filepath: `/storage/emulated/0/Calls/${filename}`,
+      filepath: filename,
+      isRead: true
+    };
+  }
+  
+  // Pattern 2: Recording_[date:YYYYMMDD]_[phoneNumber].m4a
+  const samsungPattern2 = /Recording_(\d{8})_(\d+)\.m4a/;
+  match = filename.match(samsungPattern2);
+  
+  if (match) {
+    const [_, date, phoneNumber] = match;
+    const timestamp = new Date(
+      `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T00:00:00`
+    ).getTime();
+    
+    return {
+      phoneNumber,
+      timestamp,
+      filepath: filename,
+      isRead: true
+    };
+  }
+  
+  // Pattern 3: [phoneNumber]_[date:YYYYMMDD]_[time:HHMMSS].m4a
+  const samsungPattern3 = /(\d+)_(\d{8})_(\d{6})\.m4a/;
+  match = filename.match(samsungPattern3);
+  
+  if (match) {
+    const [_, phoneNumber, date, time] = match;
+    const timestamp = new Date(
+      `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`
+    ).getTime();
+    
+    return {
+      phoneNumber,
+      timestamp,
+      filepath: filename,
       isRead: true
     };
   }

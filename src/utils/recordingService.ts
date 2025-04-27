@@ -1,7 +1,7 @@
 
 import { Recording, Contact } from '../types/recording';
 import { parseSamsungRecordingName } from './recordingUtils';
-import { scanExistingRecordings, getFileDetails, isAndroid, isNativePlatform, showToast } from './nativeBridge';
+import { scanExistingRecordings, getFileDetails, isAndroid, isNativePlatform, showToast, checkStoragePermission } from './nativeBridge';
 
 class RecordingService {
   private listeners: Array<() => void> = [];
@@ -51,6 +51,13 @@ class RecordingService {
     
     this.lastRefreshTime = now;
     
+    // Check permissions before getting recordings
+    const hasPermission = await checkStoragePermission();
+    if (!hasPermission) {
+      console.log("No storage permission, can't refresh recordings");
+      return;
+    }
+    
     // Get fresh recordings
     await this.getAllRecordings(true);
     
@@ -63,6 +70,13 @@ class RecordingService {
     if (!isNativePlatform() || !isAndroid()) {
       console.log("Not on Android device, no recordings available");
       await showToast("This app requires an Android device to access recordings");
+      return [];
+    }
+    
+    // Check permissions
+    const hasPermission = await checkStoragePermission();
+    if (!hasPermission) {
+      console.log("No storage permission, can't get recordings");
       return [];
     }
     
