@@ -1,23 +1,48 @@
+
 import { Contact, Recording, RecordingFolder } from '../types/recording';
 
 // Parse Samsung call recording filename
 export const parseSamsungRecordingName = (filename: string): Partial<Recording> | null => {
   // Samsung saves recordings in format: Call_20250418_143022_INCOMING_1234567890.m4a
   // Pattern: Call_[date:YYYYMMDD]_[time:HHMMSS]_[INCOMING/OUTGOING]_[phoneNumber].m4a
-  const pattern = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
-  const match = filename.match(pattern);
+  const samsungPattern = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
+  const match = filename.match(samsungPattern);
   
-  if (!match) return null;
+  if (match) {
+    const [_, date, time, direction, phoneNumber] = match;
+    const timestamp = new Date(
+      `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`
+    ).getTime();
+    
+    return {
+      phoneNumber,
+      timestamp,
+      filepath: `/storage/emulated/0/Calls/${filename}`,
+      isRead: true
+    };
+  }
   
-  const [_, date, time, direction, phoneNumber] = match;
-  const timestamp = new Date(
-    `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`
-  ).getTime();
+  // Generic format for other recording apps
+  // Extract phone number if present in filename
+  const phonePattern = /(\d{10,})/ 
+  const phoneMatch = filename.match(phonePattern);
+  const phoneNumber = phoneMatch ? phoneMatch[1] : 'Unknown';
+  
+  // Try to find a date in the filename YYYYMMDD or similar
+  const datePattern = /(\d{4})[-_]?(\d{2})[-_]?(\d{2})/;
+  const dateMatch = filename.match(datePattern);
+  
+  let timestamp = new Date().getTime();
+  
+  if (dateMatch) {
+    const [_, year, month, day] = dateMatch;
+    timestamp = new Date(`${year}-${month}-${day}`).getTime();
+  }
   
   return {
     phoneNumber,
     timestamp,
-    filepath: `/storage/emulated/0/Calls/${filename}`,
+    filepath: filename,
     isRead: true
   };
 };

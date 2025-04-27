@@ -7,8 +7,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    // Use local dev server instead of remote URL
-    url: 'http://localhost:8080',
+    // Production mode - use built assets
+    // Only enable localhost for development
     cleartext: true
   },
   plugins: {
@@ -23,7 +23,12 @@ const config: CapacitorConfig = {
     backgroundColor: "#1A221A",
     allowMixedContent: true,
     webContentsDebuggingEnabled: true,
-    appendUserAgent: "SamsungCallRecorder"
+    appendUserAgent: "SamsungCallRecorder",
+    useLegacyBridge: true,  // Try this for older Android devices
+    permissions: [
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ]
   }
 };
 
