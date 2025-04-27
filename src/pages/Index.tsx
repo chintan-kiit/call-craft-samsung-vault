@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
@@ -21,7 +20,6 @@ const Index = () => {
   const [permissionStatus, setPermissionStatus] = useState<boolean | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch recordings data
   const { 
     data: recordings = [], 
     isLoading: recordingsLoading, 
@@ -32,13 +30,11 @@ const Index = () => {
     queryFn: async () => recordingService.getAllRecordings(),
   });
 
-  // Fetch contacts data
   const { data: contacts = [], isLoading: contactsLoading } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => recordingService.getAllContacts(),
   });
 
-  // Check permissions on first load
   useEffect(() => {
     const checkPermissions = async () => {
       if (isNativePlatform()) {
@@ -53,7 +49,6 @@ const Index = () => {
     checkPermissions();
   }, [refetchRecordings]);
 
-  // Effect for page focus to refresh recordings
   useEffect(() => {
     const refreshOnFocus = async () => {
       if (isNativePlatform() && permissionStatus) {
@@ -62,23 +57,19 @@ const Index = () => {
       }
     };
 
-    // Initial refresh if we have permission
     if (permissionStatus) {
       refreshOnFocus();
     }
 
-    // Add listener for recordingService updates
     const removeListener = recordingService.addListener(() => {
       refetchRecordings();
     });
 
-    // Clean up listener
     return () => {
       removeListener();
     };
   }, [refetchRecordings, permissionStatus]);
 
-  // Request permission explicitly
   const handleRequestPermission = async () => {
     setIsRefreshing(true);
     
@@ -90,11 +81,7 @@ const Index = () => {
         toast.success("Storage permission granted");
         refetchRecordings();
       } else {
-        toast({
-          title: "Permission denied",
-          description: "Please grant storage permission in device settings",
-          variant: "destructive"
-        });
+        toast.error("Permission denied. Please grant storage permission in device settings.");
       }
     } catch (error) {
       console.error("Error requesting permission:", error);
@@ -104,13 +91,11 @@ const Index = () => {
     }
   };
 
-  // Open system settings
   const openSettings = async () => {
     await openAppSettings();
     toast.info("Please grant storage permissions in settings and return to app");
   };
 
-  // Manual refresh
   const handleRefreshRecordings = async () => {
     setIsRefreshing(true);
     try {
@@ -125,11 +110,9 @@ const Index = () => {
     }
   };
 
-  // Get recent recordings and folders
   const recentRecordings = getRecentRecordings(recordings, 3);
   const folders = getRecordingFolders(recordings, contacts);
 
-  // Handle playing a recording
   const handlePlayRecording = (recordingId: string) => {
     const recording = recordings.find(r => r.id === recordingId);
     if (recording) {
@@ -138,16 +121,13 @@ const Index = () => {
     }
   };
 
-  // Handle more options for a recording
   const handleMoreOptions = (recordingId: string) => {
     const recording = recordings.find(r => r.id === recordingId);
     if (recording) {
-      // In a real app, this would show options like delete, share, etc.
       toast(`Options for recording from ${recording.contactName || recording.phoneNumber}`);
     }
   };
 
-  // Show loading state
   if (recordingsLoading || contactsLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-samsungDark-900">
@@ -164,7 +144,6 @@ const Index = () => {
     );
   }
 
-  // Show permission request state if needed
   if (permissionStatus === false || permissionStatus === null) {
     return (
       <div className="flex flex-col min-h-screen bg-samsungDark-900">
@@ -263,7 +242,6 @@ const Index = () => {
           </div>
         ) : (
           <>
-            {/* Recent Recordings */}
             <section className="mb-6">
               <h2 className="text-lg font-semibold mb-3 text-green-50">Recent Recordings</h2>
               
@@ -284,7 +262,6 @@ const Index = () => {
               )}
             </section>
             
-            {/* Recording Folders */}
             <section>
               <h2 className="text-lg font-semibold mb-3 text-green-50">Recordings by Contact</h2>
               
@@ -307,7 +284,6 @@ const Index = () => {
         )}
       </main>
       
-      {/* Recording Player */}
       {activeRecording && (
         <RecordingPlayer
           recording={activeRecording}
@@ -315,7 +291,6 @@ const Index = () => {
         />
       )}
       
-      {/* Search Dialog */}
       <SearchDialog
         open={searchOpen}
         onOpenChange={setSearchOpen}
