@@ -9,18 +9,25 @@ import { SearchDialog } from '../components/SearchDialog';
 import { recordingService } from '../utils/recordingService';
 import { getRecordingFolders, getRecentRecordings } from '../utils/recordingUtils';
 import { Recording } from '../types/recording';
-import { isNativePlatform, checkStoragePermission } from '../utils/nativeBridge';
+import { isNativePlatform, checkStoragePermission, openAppSettings } from '../utils/nativeBridge';
 import { toast } from '../components/ui/sonner';
 import { Button } from '../components/ui/button';
+import { ExternalLink, Settings, RefreshCw, AlertCircle } from 'lucide-react';
 
 const Index = () => {
   const [activeRecording, setActiveRecording] = useState<Recording | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<boolean | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch recordings data
-  const { data: recordings = [], isLoading: recordingsLoading, refetch: refetchRecordings } = useQuery({
+  const { 
+    data: recordings = [], 
+    isLoading: recordingsLoading, 
+    refetch: refetchRecordings,
+    isError: recordingsError
+  } = useQuery({
     queryKey: ['recordings'],
     queryFn: async () => recordingService.getAllRecordings(),
   });
@@ -71,16 +78,50 @@ const Index = () => {
     };
   }, [refetchRecordings, permissionStatus]);
 
-  // Request permission manually
+  // Request permission explicitly
   const handleRequestPermission = async () => {
-    const hasPermission = await checkStoragePermission();
-    setPermissionStatus(hasPermission);
+    setIsRefreshing(true);
     
-    if (hasPermission) {
-      toast.success("Storage permission granted");
-      refetchRecordings();
-    } else {
-      toast.error("Storage permission denied. Please grant permission in device settings.");
+    try {
+      const success = await recordingService.requestPermissionAndRefresh();
+      setPermissionStatus(success);
+      
+      if (success) {
+        toast.success("Storage permission granted");
+        refetchRecordings();
+      } else {
+        toast({
+          title: "Permission denied",
+          description: "Please grant storage permission in device settings",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error requesting permission:", error);
+      toast.error("Error requesting permissions");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Open system settings
+  const openSettings = async () => {
+    await openAppSettings();
+    toast.info("Please grant storage permissions in settings and return to app");
+  };
+
+  // Manual refresh
+  const handleRefreshRecordings = async () => {
+    setIsRefreshing(true);
+    try {
+      await recordingService.refreshRecordings();
+      await refetchRecordings();
+      toast.success("Recordings refreshed");
+    } catch (error) {
+      console.error("Error refreshing:", error);
+      toast.error("Failed to refresh recordings");
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -132,12 +173,36 @@ const Index = () => {
           onSearchClick={() => setSearchOpen(true)} 
         />
         <div className="flex-1 p-4 flex flex-col items-center justify-center">
-          <div className="text-center text-green-300 mb-6">
+          <div className="text-center text-green-300 mb-6 w-full max-w-md">
             <h2 className="text-xl font-semibold mb-3">Storage Permission Required</h2>
             <p className="mb-6">In order to access call recordings, this app needs permission to read your device storage.</p>
-            <Button onClick={handleRequestPermission} className="bg-green-600 hover:bg-green-700">
-              Grant Permission
-            </Button>
+            
+            <div className="space-y-3">
+              <Button 
+                onClick={handleRequestPermission} 
+                className="bg-green-600 hover:bg-green-700 w-full"
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? 'Requesting...' : 'Grant Permission'}
+              </Button>
+              
+              <Button 
+                onClick={openSettings}
+                variant="outline" 
+                className="w-full border-green-600 text-green-600 hover:bg-green-900"
+              >
+                <Settings size={16} className="mr-2" />
+                Open System Settings
+              </Button>
+              
+              <div className="mt-8 p-3 bg-yellow-800 bg-opacity-30 rounded-md flex items-start">
+                <AlertCircle size={20} className="text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-yellow-300 text-left">
+                  If permission dialog doesn't appear, please use the "Open System Settings" button and manually grant 
+                  Storage permission to the app.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -152,12 +217,49 @@ const Index = () => {
       />
       
       <main className="flex-1 p-4 max-w-4xl mx-auto w-full">
+        <div className="mb-4 flex justify-between items-center">
+          <h1 className="text-lg font-semibold text-green-50">Call Recordings</h1>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="text-green-400 border-green-600 hover:bg-green-900"
+            onClick={handleRefreshRecordings}
+            disabled={isRefreshing}
+          >
+            <RefreshCw size={16} className={`mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+        
         {recordings.length === 0 ? (
-          <div className="text-center py-10">
+          <div className="text-center py-10 bg-samsungDark-800 rounded-lg p-6">
             <p className="text-muted-foreground mb-4">No recordings found.</p>
-            <Button onClick={handleRequestPermission} className="bg-green-600 hover:bg-green-700">
-              Check Permission Again
-            </Button>
+            
+            <div className="space-y-3 max-w-xs mx-auto">
+              <Button 
+                onClick={handleRequestPermission} 
+                className="bg-green-600 hover:bg-green-700 w-full"
+              >
+                Check Permission Again
+              </Button>
+              
+              <Button 
+                onClick={openSettings}
+                variant="outline" 
+                className="w-full border-green-600 text-green-600 hover:bg-green-900"
+              >
+                <Settings size={16} className="mr-2" />
+                Open System Settings
+              </Button>
+              
+              {recordingsError && (
+                <div className="mt-4 p-3 bg-red-900 bg-opacity-30 rounded-md">
+                  <p className="text-sm text-red-300">
+                    Error loading recordings. Please check app permissions.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <>

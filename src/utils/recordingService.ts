@@ -1,12 +1,21 @@
 
 import { Recording, Contact } from '../types/recording';
 import { parseSamsungRecordingName } from './recordingUtils';
-import { scanExistingRecordings, getFileDetails, isAndroid, isNativePlatform, showToast, checkStoragePermission } from './nativeBridge';
+import { 
+  scanExistingRecordings, 
+  getFileDetails, 
+  isAndroid, 
+  isNativePlatform, 
+  showToast, 
+  checkStoragePermission,
+  openAppSettings 
+} from './nativeBridge';
 
 class RecordingService {
   private listeners: Array<() => void> = [];
   private refreshInterval: NodeJS.Timeout | null = null;
   private lastRefreshTime: number = 0;
+  private permissionChecked: boolean = false;
 
   constructor() {
     // Initialize with periodic refresh
@@ -43,19 +52,41 @@ class RecordingService {
     this.listeners.forEach(listener => listener());
   }
 
+  // Request storage permission and scan for recordings
+  async requestPermissionAndRefresh(): Promise<boolean> {
+    if (!isNativePlatform() || !isAndroid()) {
+      await showToast("This app requires an Android device to access recordings");
+      return false;
+    }
+    
+    // Check permissions
+    const hasPermission = await checkStoragePermission();
+    this.permissionChecked = true;
+    
+    if (!hasPermission) {
+      console.log("Permission not granted, offering to open settings");
+      await openAppSettings();
+      return false;
+    }
+    
+    // Refresh recordings
+    await this.refreshRecordings();
+    return true;
+  }
+
   // Manual refresh recordings
   async refreshRecordings() {
-    // Don't refresh too frequently (at most once per 30 seconds)
+    // Don't refresh too frequently (at most once per 15 seconds)
     const now = Date.now();
-    if (now - this.lastRefreshTime < 30000) return;
+    if (now - this.lastRefreshTime < 15000) return;
     
     this.lastRefreshTime = now;
     
-    // Check permissions before getting recordings
-    const hasPermission = await checkStoragePermission();
-    if (!hasPermission) {
-      console.log("No storage permission, can't refresh recordings");
-      return;
+    // Skip refresh if we've never checked permissions or don't have them
+    if (!this.permissionChecked) {
+      const hasPermission = await checkStoragePermission();
+      this.permissionChecked = true;
+      if (!hasPermission) return;
     }
     
     // Get fresh recordings
@@ -63,25 +94,30 @@ class RecordingService {
     
     // Notify listeners
     this.notifyListeners();
+    
+    // Log completion
+    console.log("Recordings refresh completed");
   }
 
   // Get all recordings present on the device
   async getAllRecordings(forceRefresh = false): Promise<Recording[]> {
     if (!isNativePlatform() || !isAndroid()) {
       console.log("Not on Android device, no recordings available");
-      await showToast("This app requires an Android device to access recordings");
       return [];
     }
     
-    // Check permissions
-    const hasPermission = await checkStoragePermission();
-    if (!hasPermission) {
-      console.log("No storage permission, can't get recordings");
-      return [];
+    // Check permissions if not already done
+    if (!this.permissionChecked) {
+      const hasPermission = await checkStoragePermission();
+      this.permissionChecked = true;
+      if (!hasPermission) {
+        console.log("No storage permission, can't get recordings");
+        return [];
+      }
     }
     
     // Get filepaths from device's call recordings folders
-    console.log("Scanning for real recordings on Android device");
+    console.log("Scanning for recordings on Android device");
     const filepaths = await scanExistingRecordings();
     
     if (filepaths.length === 0) {
@@ -94,23 +130,20 @@ class RecordingService {
     for (const filepath of filepaths) {
       try {
         const filename = filepath.split('/').pop() || '';
-        const partial = parseSamsungRecordingName(filename);
+        const fileInfo = parseSamsungRecordingName(filename);
         
-        // Get file size from filesystem
+        // Get file details from filesystem
         const fileDetails = await getFileDetails(filepath);
-        
-        // If we couldn't parse the filename in the expected format,
-        // use a generic format with just the filename
-        const phoneNumber = partial?.phoneNumber || 'Unknown';
-        const timestamp = partial?.timestamp || new Date().getTime();
         
         recordings.push({
           id: filepath,
           contactId: '', 
-          phoneNumber: phoneNumber,
+          phoneNumber: fileInfo?.phoneNumber || 'Unknown',
           contactName: null,
-          duration: Math.floor((fileDetails.size || 0) / 16000), // Rough estimate based on file size
-          timestamp: timestamp,
+          // Calculate approximate duration based on file size
+          // (16KB/sec is a rough estimate for common audio formats)
+          duration: Math.floor((fileDetails.size || 0) / 16000), 
+          timestamp: fileInfo?.timestamp || new Date().getTime(),
           filepath,
           size: fileDetails?.size || 0,
           isRead: true,
@@ -128,13 +161,12 @@ class RecordingService {
 
   // Get contacts - returns empty array as this would require actual Contacts API integration
   async getAllContacts(): Promise<Contact[]> {
-    // Real implementation would use Contacts API
+    // Would integrate with Contacts API in a real implementation
     return [];
   }
 
-  // Update contact name - no-op since we're not using mock data
+  // Update contact name - no-op for now
   updateContactName(phoneNumber: string, newName: string | null) {
-    // Would update contact in real Contacts API
     return;
   }
 

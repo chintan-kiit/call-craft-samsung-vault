@@ -6,7 +6,7 @@ export const parseSamsungRecordingName = (filename: string): Partial<Recording> 
   // Samsung saves recordings in various formats, trying multiple patterns:
   
   // Pattern 1: Call_[date:YYYYMMDD]_[time:HHMMSS]_[INCOMING/OUTGOING]_[phoneNumber].m4a
-  const samsungPattern1 = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.m4a/;
+  const samsungPattern1 = /Call_(\d{8})_(\d{6})_(INCOMING|OUTGOING)_(\d+)\.(m4a|3gp|mp3|wav|amr|aac)/i;
   let match = filename.match(samsungPattern1);
   
   if (match) {
@@ -24,7 +24,7 @@ export const parseSamsungRecordingName = (filename: string): Partial<Recording> 
   }
   
   // Pattern 2: Recording_[date:YYYYMMDD]_[phoneNumber].m4a
-  const samsungPattern2 = /Recording_(\d{8})_(\d+)\.m4a/;
+  const samsungPattern2 = /Recording_(\d{8})_(\d+)\.(m4a|3gp|mp3|wav|amr|aac)/i;
   match = filename.match(samsungPattern2);
   
   if (match) {
@@ -42,7 +42,7 @@ export const parseSamsungRecordingName = (filename: string): Partial<Recording> 
   }
   
   // Pattern 3: [phoneNumber]_[date:YYYYMMDD]_[time:HHMMSS].m4a
-  const samsungPattern3 = /(\d+)_(\d{8})_(\d{6})\.m4a/;
+  const samsungPattern3 = /(\d+)_(\d{8})_(\d{6})\.(m4a|3gp|mp3|wav|amr|aac)/i;
   match = filename.match(samsungPattern3);
   
   if (match) {
@@ -59,9 +59,45 @@ export const parseSamsungRecordingName = (filename: string): Partial<Recording> 
     };
   }
   
+  // Pattern 4: Record_[date:YYYYMMDD]_[time:HHMMSS].m4a
+  const samsungPattern4 = /Record_(\d{8})_(\d{6})\.(m4a|3gp|mp3|wav|amr|aac)/i;
+  match = filename.match(samsungPattern4);
+  
+  if (match) {
+    const [_, date, time] = match;
+    const timestamp = new Date(
+      `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`
+    ).getTime();
+    
+    return {
+      phoneNumber: "Unknown",
+      timestamp,
+      filepath: filename,
+      isRead: true
+    };
+  }
+  
+  // Pattern 5: VoiceRecording_[date:YYYYMMDD]_[time:HHMMSS].m4a
+  const samsungPattern5 = /VoiceRecording_(\d{8})_(\d{6})\.(m4a|3gp|mp3|wav|amr|aac)/i;
+  match = filename.match(samsungPattern5);
+  
+  if (match) {
+    const [_, date, time] = match;
+    const timestamp = new Date(
+      `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}T${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`
+    ).getTime();
+    
+    return {
+      phoneNumber: "Unknown",
+      timestamp,
+      filepath: filename,
+      isRead: true
+    };
+  }
+  
   // Generic format for other recording apps
   // Extract phone number if present in filename
-  const phonePattern = /(\d{10,})/ 
+  const phonePattern = /(\d{7,})/ 
   const phoneMatch = filename.match(phonePattern);
   const phoneNumber = phoneMatch ? phoneMatch[1] : 'Unknown';
   

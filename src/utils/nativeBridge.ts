@@ -21,8 +21,32 @@ export const getRecordingsPaths = (): string[] => [
   '/storage/emulated/0/Samsung/VoiceRecorder',
   '/storage/emulated/0/Phone/Recordings',
   '/storage/emulated/0/Phone/Call',
-  '/storage/emulated/0/Phone/CallRecorder'
+  '/storage/emulated/0/Phone/CallRecorder',
+  // Add more common paths
+  '/storage/emulated/0/Music',
+  '/storage/emulated/0/Download',
+  '/storage/emulated/0/Recording',
+  '/storage/emulated/0/Recorder',
+  '/storage/emulated/0/Audio',
+  '/storage/emulated/0/VoiceRecorder',
+  '/storage/emulated/0/Call Recordings',
+  '/storage/emulated/0/CallRecordings'
 ];
+
+// Open system app settings for this app
+export const openAppSettings = async (): Promise<void> => {
+  if (!isAndroid()) return;
+  
+  // Using direct Capacitor API to open app settings
+  try {
+    // @ts-ignore - We're using a direct Capacitor API
+    await Capacitor.Plugins.App.openSystemSettings();
+    await showToast('Opening app settings...');
+  } catch (error) {
+    console.error('Failed to open settings:', error);
+    await showToast('Please open app settings manually to grant permissions');
+  }
+};
 
 // Check and request storage permissions using native Android APIs
 export const checkStoragePermission = async (): Promise<boolean> => {
@@ -35,50 +59,53 @@ export const checkStoragePermission = async (): Promise<boolean> => {
     // Try directly accessing common paths to trigger permission prompt
     console.log("Attempting to access storage...");
 
-    // First try direct permission check (this triggers system permission dialog)
+    // Check permission status using Capacitor Filesystem API
     const result = await Filesystem.checkPermissions();
-    console.log("Permission check result:", result);
+    console.log("Initial permission check result:", result);
     
     if (result.publicStorage !== 'granted') {
-      // Request permission explicitly
-      console.log("Requesting storage permission...");
+      console.log("Storage permission not granted, requesting...");
+      
+      // Request permission
       const requestResult = await Filesystem.requestPermissions();
       console.log("Permission request result:", requestResult);
       
       if (requestResult.publicStorage !== 'granted') {
         console.log("Permission denied by user");
-        await showToast('Storage permission is required to access call recordings');
+        await showToast('Storage permission is required to access call recordings. Please grant it in system settings.');
         return false;
       }
     }
     
-    // Try accessing one of the paths to verify permission is working
+    // Additional verification - try to read from storage
+    let accessSuccess = false;
     const paths = getRecordingsPaths();
-    for (const path of paths) {
+    
+    for (const path of paths.slice(0, 5)) { // Try first few paths
       try {
-        console.log(`Trying to access path: ${path}`);
-        const result = await Filesystem.readdir({
-          path: path,
+        await Filesystem.readdir({
+          path,
           directory: Directory.ExternalStorage
         });
         
-        if (result && result.files) {
-          console.log(`Successfully accessed ${path}, found ${result.files.length} files`);
-          return true;
-        }
+        console.log(`Successfully accessed ${path}`);
+        accessSuccess = true;
+        break;
       } catch (error) {
-        console.log(`Failed to access path: ${path}`, error);
-        // Continue to next path
+        console.log(`Failed to access ${path}:`, error);
       }
     }
     
-    console.log('Could not access any recording paths');
-    await showToast('Could not find call recordings folder. Please check your device storage.');
-    return false;
+    if (!accessSuccess) {
+      console.log("Could not access any storage paths despite permission");
+      return false;
+    }
+    
+    return true;
     
   } catch (error) {
-    console.error('Error checking storage permission:', error);
-    await showToast('Storage permission check failed');
+    console.error('Storage permission check failed:', error);
+    await showToast('Storage access error. Please check app permissions in device settings.');
     return false;
   }
 };
@@ -94,6 +121,9 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
     const recordings: string[] = [];
     const paths = getRecordingsPaths();
     
+    // Log attempt to find recordings
+    console.log(`Attempting to scan ${paths.length} potential recording paths...`);
+    
     for (const recordingsPath of paths) {
       try {
         console.log('Scanning recordings at path:', recordingsPath);
@@ -103,33 +133,38 @@ export const scanExistingRecordings = async (): Promise<string[]> => {
         });
 
         // Filter for common recording formats
-        const pathRecordings = result.files
-          .filter(file => file.name.endsWith('.m4a') || 
-                         file.name.endsWith('.3gp') || 
-                         file.name.endsWith('.mp3') || 
-                         file.name.endsWith('.wav') ||
-                         file.name.includes('Call_'))
+        const audioFiles = result.files
+          .filter(file => {
+            const name = file.name.toLowerCase();
+            return name.endsWith('.m4a') || 
+                   name.endsWith('.3gp') || 
+                   name.endsWith('.mp3') || 
+                   name.endsWith('.wav') ||
+                   name.endsWith('.amr') ||
+                   name.endsWith('.aac') ||
+                   name.includes('call_') ||
+                   name.includes('record');
+          })
           .map(file => `${recordingsPath}/${file.name}`);
 
-        console.log(`Found ${pathRecordings.length} recordings in ${recordingsPath}`);
-        recordings.push(...pathRecordings);
+        if (audioFiles.length > 0) {
+          console.log(`Found ${audioFiles.length} audio files in ${recordingsPath}`);
+          recordings.push(...audioFiles);
+        }
       } catch (error) {
-        console.log(`Error accessing ${recordingsPath}:`, error);
-        // Continue to next path
+        // Continue to next path silently
       }
     }
 
     if (recordings.length === 0) {
-      console.log('No recordings found in any location');
-      await showToast('No call recordings found. Please check app permissions.');
+      console.log('No recordings found in any scanned location');
     } else {
-      console.log(`Found a total of ${recordings.length} recordings`);
+      console.log(`Found a total of ${recordings.length} potential recordings`);
     }
     
     return recordings;
   } catch (error) {
     console.error('Error scanning recordings:', error);
-    await showToast('Error accessing recordings folder. Please check app permissions.');
     return [];
   }
 };
@@ -167,6 +202,6 @@ export const getFileDetails = async (filepath: string) => {
 export const showToast = async (message: string): Promise<void> => {
   await Toast.show({
     text: message,
-    duration: 'short'
+    duration: 'long'
   });
 };
