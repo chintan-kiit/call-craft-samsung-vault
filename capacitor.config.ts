@@ -12,6 +12,18 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 0
+    },
+    Filesystem: {
+      androidPermissions: [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.MANAGE_EXTERNAL_STORAGE"
+      ]
+    },
+    App: {
+      webViewAllowOverscroll: false
     }
   },
   android: {
@@ -27,8 +39,15 @@ const config: CapacitorConfig = {
       "android.permission.READ_MEDIA_IMAGES",
       "android.permission.MANAGE_EXTERNAL_STORAGE",
       "android.permission.READ_PHONE_STATE",
-      "android.permission.RECORD_AUDIO"
-    ]
+      "android.permission.RECORD_AUDIO",
+      "android.permission.READ_CONTACTS"
+    ],
+    includePlugins: [
+      "@capacitor/filesystem",
+      "@capacitor/app",
+      "@capacitor/device",
+      "@capacitor/toast"
+    ],
   }
 };
 

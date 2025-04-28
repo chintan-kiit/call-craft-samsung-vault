@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
@@ -9,9 +10,11 @@ import { recordingService } from '../utils/recordingService';
 import { getRecordingFolders, getRecentRecordings } from '../utils/recordingUtils';
 import { Recording } from '../types/recording';
 import { isNativePlatform, checkStoragePermission, openAppSettings } from '../utils/nativeBridge';
-import { toast } from '../components/ui/sonner';
+import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import { ExternalLink, Settings, RefreshCw, AlertCircle } from 'lucide-react';
+import { permissionsManager } from './utils/permissionsManager';
+import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
 
 const Index = () => {
   const [activeRecording, setActiveRecording] = useState<Recording | null>(null);
@@ -38,7 +41,8 @@ const Index = () => {
   useEffect(() => {
     const checkPermissions = async () => {
       if (isNativePlatform()) {
-        const hasPermission = await checkStoragePermission();
+        // Use the new permissions manager for more reliable checks
+        const hasPermission = await permissionsManager.checkStoragePermissions();
         setPermissionStatus(hasPermission);
         if (hasPermission) {
           refetchRecordings();
@@ -74,7 +78,8 @@ const Index = () => {
     setIsRefreshing(true);
     
     try {
-      const success = await recordingService.requestPermissionAndRefresh();
+      // Use our enhanced permissions approach that tries multiple methods
+      const success = await permissionsManager.tryAllPermissionApproaches();
       setPermissionStatus(success);
       
       if (success) {
@@ -174,13 +179,23 @@ const Index = () => {
                 Open System Settings
               </Button>
               
-              <div className="mt-8 p-3 bg-yellow-800 bg-opacity-30 rounded-md flex items-start">
-                <AlertCircle size={20} className="text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-yellow-300 text-left">
-                  If permission dialog doesn't appear, please use the "Open System Settings" button and manually grant 
-                  Storage permission to the app.
-                </p>
-              </div>
+              <Alert className="mt-4 border-yellow-500/50 bg-yellow-500/10">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertTitle className="text-yellow-500">Important</AlertTitle>
+                <AlertDescription className="text-yellow-400 text-sm">
+                  If permission dialog doesn't appear, please use the "Open System Settings" button 
+                  and manually grant Storage permission to the app.
+                </AlertDescription>
+              </Alert>
+              
+              <Alert className="mt-2 border-blue-500/50 bg-blue-500/10">
+                <AlertCircle className="h-4 w-4 text-blue-500" />
+                <AlertTitle className="text-blue-500">For Samsung Users</AlertTitle>
+                <AlertDescription className="text-blue-400 text-sm">
+                  Make sure to enable "Allow access to Call history" and "Allow access to Storage" 
+                  in your phone's settings for this app.
+                </AlertDescription>
+              </Alert>
             </div>
           </div>
         </div>
