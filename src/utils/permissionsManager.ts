@@ -79,17 +79,8 @@ class PermissionsManager {
             
             // Try to open app settings directly
             try {
-              // For newer Capacitor versions
-              if (typeof App.openUrl === 'function') {
-                const appInfo = await App.getInfo();
-                await App.openUrl({
-                  url: `package:${appInfo.id}`
-                });
-              } else {
-                // Fallback for older Capacitor versions or different API
-                // @ts-ignore - Handle potential API differences
-                await App.openSettings();
-              }
+              // Open app settings using App plugin
+              await App.openSettings();
               
               console.log('Opened app settings');
               return false; // Return false as user needs to grant permission in settings
@@ -141,18 +132,7 @@ class PermissionsManager {
         
         try {
           // Try to open system settings for the app
-          const appInfo = await App.getInfo();
-          console.log(`Opening settings for app: ${appInfo.id}`);
-          
-          try {
-            await App.openUrl({
-              url: `package:${appInfo.id}`
-            });
-          } catch (err) {
-            // Fallback to older API
-            // @ts-ignore - Force usage of potentially available method
-            await App.openSettings();
-          }
+          await App.openSettings();
         } catch (e) {
           console.error('Failed to open settings:', e);
         }

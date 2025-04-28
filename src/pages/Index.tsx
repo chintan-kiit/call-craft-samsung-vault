@@ -9,11 +9,11 @@ import { SearchDialog } from '../components/SearchDialog';
 import { recordingService } from '../utils/recordingService';
 import { getRecordingFolders, getRecentRecordings } from '../utils/recordingUtils';
 import { Recording } from '../types/recording';
-import { isNativePlatform, checkStoragePermission, openAppSettings } from '../utils/nativeBridge';
+import { isNativePlatform, openAppSettings } from '../utils/nativeBridge';
 import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import { ExternalLink, Settings, RefreshCw, AlertCircle } from 'lucide-react';
-import { permissionsManager } from './utils/permissionsManager';
+import { permissionsManager } from '../utils/permissionsManager';
 import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
 
 const Index = () => {
