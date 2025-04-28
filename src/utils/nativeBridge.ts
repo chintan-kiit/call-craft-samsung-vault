@@ -1,3 +1,4 @@
+
 import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -40,8 +41,7 @@ export const openAppSettings = async (): Promise<void> => {
   // Using Capacitor App URL API to open app settings
   try {
     const appInfo = await App.getInfo();
-    // For Android, use the App.openUrl API with proper format for Capacitor 7
-    // Capacitor 7 expects a string directly instead of an options object
+    // For Android, use the App.openUrl method available in Capacitor 7
     await App.openUrl(`package:${appInfo.id}`);
     await showToast('Opening app settings...');
   } catch (error) {
@@ -207,3 +207,4 @@ export const showToast = async (message: string): Promise<void> => {
     duration: 'long'
   });
 };
+

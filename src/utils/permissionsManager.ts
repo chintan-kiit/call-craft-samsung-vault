@@ -1,3 +1,4 @@
+
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, FileInfo } from '@capacitor/filesystem';
 import { App } from '@capacitor/app';
@@ -78,9 +79,9 @@ class PermissionsManager {
             
             // Try to open app settings directly
             try {
-              // Open app settings using App plugin with correct Capacitor 7 format
+              // Open app settings using App plugin
               const appInfo = await App.getInfo();
-              // Capacitor 7 expects a string directly
+              // Use the standard openUrl method available in Capacitor
               await App.openUrl(`package:${appInfo.id}`);
               
               console.log('Opened app settings');
@@ -132,9 +133,9 @@ class PermissionsManager {
         toast.info("Please manually grant storage permission in settings");
         
         try {
-          // Open app settings using correct Capacitor 7 format
+          // Open app settings
           const appInfo = await App.getInfo();
-          // Capacitor 7 expects a string directly
+          // Use the standard openUrl method
           await App.openUrl(`package:${appInfo.id}`);
         } catch (e) {
           console.error('Failed to open settings:', e);
