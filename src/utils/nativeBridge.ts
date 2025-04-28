@@ -37,10 +37,10 @@ export const getRecordingsPaths = (): string[] => [
 export const openAppSettings = async (): Promise<void> => {
   if (!isAndroid()) return;
   
-  // Using direct Capacitor API to open app settings
+  // Using Capacitor App URL API to open app settings
   try {
-    // @ts-ignore - We're using a direct Capacitor API
-    await Capacitor.Plugins.App.openSystemSettings();
+    const appInfo = await App.getInfo();
+    await App.openUrl({ url: `package:${appInfo.id}` });
     await showToast('Opening app settings...');
   } catch (error) {
     console.error('Failed to open settings:', error);

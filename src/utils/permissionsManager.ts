@@ -77,10 +77,11 @@ class PermissionsManager {
           if (result.publicStorage !== 'granted') {
             toast.info("Please grant storage access in system settings");
             
-            // Try to open app settings directly
+            // Try to open app settings directly - using Capacitor's URL scheme approach
             try {
-              // Open app settings using App plugin
-              await App.openSettings();
+              // Open app settings using App plugin and URL approach
+              const appInfo = await App.getInfo();
+              await App.openUrl({ url: `package:${appInfo.id}` });
               
               console.log('Opened app settings');
               return false; // Return false as user needs to grant permission in settings
@@ -131,8 +132,9 @@ class PermissionsManager {
         toast.info("Please manually grant storage permission in settings");
         
         try {
-          // Try to open system settings for the app
-          await App.openSettings();
+          // Open app settings using URL approach
+          const appInfo = await App.getInfo();
+          await App.openUrl({ url: `package:${appInfo.id}` });
         } catch (e) {
           console.error('Failed to open settings:', e);
         }
