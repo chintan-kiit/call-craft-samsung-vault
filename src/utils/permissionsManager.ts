@@ -81,7 +81,8 @@ class PermissionsManager {
             try {
               // Open app settings using App plugin and URL approach
               const appInfo = await App.getInfo();
-              await App.openUrl({ url: `package:${appInfo.id}` });
+              // Use plain openUrl without options object (as required by Capacitor 7+)
+              await App.openUrl(`package:${appInfo.id}`);
               
               console.log('Opened app settings');
               return false; // Return false as user needs to grant permission in settings
@@ -134,7 +135,8 @@ class PermissionsManager {
         try {
           // Open app settings using URL approach
           const appInfo = await App.getInfo();
-          await App.openUrl({ url: `package:${appInfo.id}` });
+          // Use plain openUrl without options object (as required by Capacitor 7+)
+          await App.openUrl(`package:${appInfo.id}`);
         } catch (e) {
           console.error('Failed to open settings:', e);
         }

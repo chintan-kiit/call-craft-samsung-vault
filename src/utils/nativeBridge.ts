@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { Toast } from '@capacitor/toast';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Device } from '@capacitor/device';
+import { App } from '@capacitor/app';
 
 // Check if running on a native platform or in browser
 export const isNativePlatform = () => Capacitor.isNativePlatform();
@@ -40,7 +41,8 @@ export const openAppSettings = async (): Promise<void> => {
   // Using Capacitor App URL API to open app settings
   try {
     const appInfo = await App.getInfo();
-    await App.openUrl({ url: `package:${appInfo.id}` });
+    // For Android, we use package: URL scheme to open app settings
+    await App.openUrl(`package:${appInfo.id}`);
     await showToast('Opening app settings...');
   } catch (error) {
     console.error('Failed to open settings:', error);
