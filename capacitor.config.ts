@@ -7,47 +7,23 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
+    // Use local dev server instead of remote URL
+    url: 'http://localhost:8080',
     cleartext: true
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 0
     },
-    Filesystem: {
-      androidPermissions: [
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_AUDIO",
-        "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.MANAGE_EXTERNAL_STORAGE"
-      ]
-    },
-    App: {
-      webViewAllowOverscroll: false
+    Permissions: {
+      requestOnPermission: true
     }
   },
   android: {
     backgroundColor: "#1A221A",
     allowMixedContent: true,
     webContentsDebuggingEnabled: true,
-    appendUserAgent: "SamsungCallRecorder",
-    useLegacyBridge: true,
-    permissions: [
-      "android.permission.READ_EXTERNAL_STORAGE",
-      "android.permission.WRITE_EXTERNAL_STORAGE",
-      "android.permission.READ_MEDIA_AUDIO",
-      "android.permission.READ_MEDIA_IMAGES",
-      "android.permission.MANAGE_EXTERNAL_STORAGE",
-      "android.permission.READ_PHONE_STATE",
-      "android.permission.RECORD_AUDIO",
-      "android.permission.READ_CONTACTS"
-    ],
-    includePlugins: [
-      "@capacitor/filesystem",
-      "@capacitor/app",
-      "@capacitor/device",
-      "@capacitor/toast"
-    ],
+    appendUserAgent: "SamsungCallRecorder"
   }
 };
 

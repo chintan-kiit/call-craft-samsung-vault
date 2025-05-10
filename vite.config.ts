@@ -10,10 +10,6 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0", // Allow connections from all network interfaces
     port: 8080,
   },
-  preview: {
-    host: "0.0.0.0", // Also configure preview server
-    port: 8080,
-  },
   plugins: [
     react(),
     mode === 'development' &&
